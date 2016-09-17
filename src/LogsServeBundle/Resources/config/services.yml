@@ -1,0 +1,3 @@
+services:
+  logs_serve.file_reader:
+    class: LogsServeBundle\Reader\FileReader
