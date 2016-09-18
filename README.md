@@ -1,6 +1,6 @@
 LogsServe
 ========
-A viewer to nicely display log files.
+Tool to serve logs files in JSON format.
 
 1.Download
 -----------
@@ -26,22 +26,51 @@ $bundles = array(
 ```
 LogsServeBundle:
     resource: "@LogsServeBundle/Resources/config/routing.yml"
-    prefix:   /logs
+    prefix:   /logs-serve
 ```
 
 4.Configure the Bundle:
 ------------------------
 ```
-log_viewer:
+logs_serve:
+    secret_key: 159951
     logs:
-      dev:
-        path: /var/logs/dev.log
-        method: json
-      test:
-        path: /dev/shm/api-backend/logs/test.log
-        method: string
-    max_tail: 500
+      mysql:
+        path: /var/log/mysql/error.log
+        lines: 100
+      apache:
+        path: /var/log/apache2/error.log
+        lines: 10
 ```
 
+Without Symfony framework
+-------------------------
+```
+<?php
 
-You can browse the whole logs at: http://your-app/logs/{name}
+$parameters = [
+    'mysql' => [
+        'path' => '/var/log/mysql/error.log',
+        'lines' => 100
+    ],
+    'apache' => [
+        'path' => '/var/log/apache2/error.log',
+        'lines' => 10
+    ]
+];
+
+$fileReader = new \LogsServeBundle\Reader\FileReader();
+
+foreach ($parameters as $name => $parameter) {
+    $data = $fileReader->read($parameter['path'], $parameter['lines']);
+
+    $logs[] = [
+        'name' => $name,
+        'logs' => isset($data) ? $data : []
+    ];
+}
+
+$response = isset($logs) ? $logs : [];
+
+$jsonResponse = json_encode($response);
+```
